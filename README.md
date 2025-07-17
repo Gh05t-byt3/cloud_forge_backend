@@ -1,9 +1,10 @@
-# Elysia with Bun runtime
+# Forge Backend 
+This is an Adminsitration server that interfases with the Proxmox API to controll provision services
 
 ## Getting Started
-To get started with this template, simply paste this command into your terminal:
+To get started intall all your packages with `bun` or `npm`
 ```bash
-bun create elysia ./elysia-example
+bun install
 ```
 
 ## Development
