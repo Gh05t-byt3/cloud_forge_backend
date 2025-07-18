@@ -1,0 +1,1 @@
+ALTER TABLE "vm" ADD CONSTRAINT "vm_node_id_node_id_fk" FOREIGN KEY ("node_id") REFERENCES "public"."node"("id") ON DELETE no action ON UPDATE no action;

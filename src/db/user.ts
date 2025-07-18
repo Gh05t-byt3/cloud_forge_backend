@@ -1,4 +1,8 @@
+import { relations } from "drizzle-orm";
 import { pgTable, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
+import { sshKey } from "./ssh_key";
+import { project } from "./project";
+import { vm } from "./vm";
 
 
 export const user = pgTable("user", {
@@ -10,3 +14,9 @@ export const user = pgTable("user", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull()
 })
+
+export const userRelations = relations(user, ({one, many}) => ({
+  sshKeys: many(sshKey),
+  projects: many(project),
+  vms: many(vm)
+}))
