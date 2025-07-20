@@ -13,7 +13,7 @@ export const sshKey = pgTable("ssh_key", {
   updatedAt: timestamp("updated_at").defaultNow()
 })
 
-export const ssh_relations = relations(sshKey, ({ one }) => ({
+export const sshRelations = relations(sshKey, ({ one }) => ({
   one: one(user, {
     fields: [sshKey.userId],
     references: [user.id],
