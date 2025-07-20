@@ -6,13 +6,13 @@ import { vm } from "./vm";
 
 
 export const user = pgTable("user", {
-  id: uuid("id").primaryKey(),
+  id: uuid("id").primaryKey().defaultRandom(),
   email: varchar("email", { length: 255 }).notNull().unique(),
   password: varchar("password", { length: 256 }).notNull(),
   firstName: varchar("first_name").notNull(),
   lastName: varchar("last_name").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull()
+  updatedAt: timestamp("updated_at").notNull().defaultNow()
 })
 
 export const userRelations = relations(user, ({one, many}) => ({
