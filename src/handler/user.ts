@@ -5,7 +5,7 @@ type UserSelect = InferSelectModel<typeof user>;
 type UserInsert = InferInsertModel<typeof user>;
 
 
-type CreateUser = Omit<UserInsert, "id"| "createdAt"| "updatedAt">
+type CreateUser = Omit<UserInsert, "id" | "createdAt" | "updatedAt">
 
 export async function createUser(_user: CreateUser): Promise<UserSelect> {
   try {
@@ -24,7 +24,7 @@ export async function getUsers(limit = 10, page = 1): Promise<UserSelect[]> {
 
 export async function getUser(email: string): Promise<UserSelect | undefined> {
   const selected = await db.query.user.findFirst({
-    where: (u, {eq}) => eq(u.email, email)
+    where: (u, { eq }) => eq(u.email, email)
   })
   return selected
 }
@@ -33,6 +33,6 @@ export async function getUser(email: string): Promise<UserSelect | undefined> {
 export async function deleteUser(id: string) {
   const deleted = await db.delete(user).where(eq(user.id, id))
   return {
-    message: "User successfully deleted"
+    message: "User Successfully Deleted"
   }
 }
