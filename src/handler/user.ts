@@ -17,9 +17,13 @@ export async function createUser(_user: CreateUser): Promise<UserSelect> {
 }
 
 export async function getUsers(limit = 10, page = 1): Promise<UserSelect[]> {
-  const offset = (page - 1) * limit
-  const selected = await db.select().from(user).limit(limit).offset(offset)
-  return selected
+  try {
+    const offset = (page - 1) * limit
+    const selected = await db.select().from(user).limit(limit).offset(offset)
+    return selected
+  } catch (error) {
+    throw new Error("Unable to retrieve users")
+  }
 }
 
 export async function getUser(email: string): Promise<UserSelect | undefined> {

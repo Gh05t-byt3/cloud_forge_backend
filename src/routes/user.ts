@@ -15,7 +15,8 @@ export const userRouter = new Elysia({
 
 userRouter.get("/", async ({ query, set }) => {
   try {
-    return getUsers(query.limit, query.page)
+    const selected = await getUsers(query.limit, query.page)
+    return selected
   } catch (error) {
     set.status = 500
     return {
@@ -83,6 +84,17 @@ userRouter.use(JWT).post("/login", async ({ jwt, cookie: { auth }, body, set }) 
   })
 
   if (!user) {
+    auth.remove()
+    set.status = 401
+    return {
+      message: "Unauthorized"
+    }
+  }
+
+  const is_match = await Bun.password.verify(body.password, selectedUser?.password!)
+
+  if (!is_match) {
+    auth.remove()
     set.status = 401
     return {
       message: "Unauthorized"
@@ -107,4 +119,10 @@ userRouter.use(JWT).post("/login", async ({ jwt, cookie: { auth }, body, set }) 
 
 userRouter.use(AuthMiddleware).get("/profile", async ({ user }) => {
   return user
-}, { auth: true })
+}, { userAuth: true })
+
+
+userRouter.post("/logout", async ({ cookie: { auth } }) => {
+  auth.remove()
+  return { messge: "Logged Out Happily" }
+})
