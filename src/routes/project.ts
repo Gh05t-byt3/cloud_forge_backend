@@ -1,5 +1,8 @@
+import { project } from "@/db/project";
 import { createProject, deleteProject, getProjects } from "@/handler/project";
 import { AuthMiddleware } from "@/utils/auth";
+import { db } from "@/utils/db";
+import { eq } from "drizzle-orm";
 import Elysia, { t } from "elysia";
 
 export const projectRouter = new Elysia({
@@ -34,6 +37,18 @@ projectRouter
       summary: "Get all Projects"
     }
   })
+
+projectRouter.get("/:id", async ({ params, set }) => {
+  try {
+    const data = await db.select().from(project).where(eq(project.id, params.id))
+    return data
+  } catch (error) {
+    set.status = 500
+    return {
+      message: "Internal Server Error"
+    }
+  }
+}, { params: t.Object({ id: t.String() }) })
 
 projectRouter
   .use(AuthMiddleware)
