@@ -6,7 +6,7 @@ import { projectRouter } from "./routes/project";
 
 const app = new Elysia()
 app.use(swagger({
-  provider: "swagger-ui"
+  provider: "scalar"
 }))
 app.use(vmRouter)
 app.use(userRouter)
