@@ -64,7 +64,7 @@ vmRouter
         } catch (error) {
             set.status = 500
             console.log(error)
-            return { message: 'Unable to create Vm ' }
+            return { message: 'Unable to create Vm' }
         }
     }, {
         userAuth: true,
@@ -89,9 +89,9 @@ vmRouter
         }
     })
 
-vmRouter.get("/:id", async ({ params: { id }, set }) => {
+vmRouter.get("/:vmId", async ({ params: { vmId }, set }) => {
     try {
-        return await client.getVM(nodeName, id)
+        return (await client.getVM(nodeName, vmId))
 
     } catch (error) {
         set.status = 500
@@ -101,7 +101,7 @@ vmRouter.get("/:id", async ({ params: { id }, set }) => {
     }
 }, {
     params: t.Object({
-        id: t.Number()
+        vmId: t.Number()
     }),
     detail: {
         summary: "Get a VM"
@@ -109,11 +109,11 @@ vmRouter.get("/:id", async ({ params: { id }, set }) => {
 })
 
 
-vmRouter.post("/:id/stop", async ({ params: { id }, set }) => {
+vmRouter.post("/:vmId/stop", async ({ params: { vmId }, set }) => {
     try {
-        await client.stopVM(nodeName, id, true)
+        await client.stopVM(nodeName, vmId, true)
         await sleep(2000)
-        return await client.getVM(nodeName, 100);
+        return await client.getVM(nodeName, vmId);
     } catch (error) {
         set.status = 500
         return {
@@ -122,18 +122,18 @@ vmRouter.post("/:id/stop", async ({ params: { id }, set }) => {
     }
 }, {
     params: t.Object({
-        id: t.Number()
+        vmId: t.Number()
     }),
     detail: {
         summary: "Stop a VM"
     }
 })
 
-vmRouter.post("/:id/start", async ({ params: { id }, set }) => {
+vmRouter.post("/:vmId/start", async ({ params: { vmId }, set }) => {
     try {
-        await client.startVM(nodeName, id)
+        await client.startVM(nodeName, vmId)
         await sleep(2000)
-        return await client.getVM(nodeName, 100);
+        return await client.getVM(nodeName, vmId);
     } catch (error) {
         set.status = 500
         return {
@@ -142,9 +142,77 @@ vmRouter.post("/:id/start", async ({ params: { id }, set }) => {
     }
 }, {
     params: t.Object({
-        id: t.Number()
+        vmId: t.Number()
     }),
     detail: {
         summary: "Start a VM"
+    }
+})
+
+//Resizing the VM
+vmRouter.put("/:vmId/resize", async ({ params: { vmId }, body, set }) => {
+    try {
+        const _ = await client.resizeVM(nodeName, vmId, body)
+        //Hard coding Reboot for now
+        // await sleep(1000)
+        // await client.stopVM(nodeName, vmId)
+        // await sleep(1000)
+        // return await client.startVM(nodeName, vmId)
+        await sleep(2000)
+        await client.rebootVM(nodeName, vmId)
+        set.status = 200
+        return {
+            message: "disk resized successfully"
+        }
+
+    } catch (error) {
+        set.status = 500
+        return {
+            "message": "failed to resize vm"
+        }
+
+    }
+}, {
+    params: t.Object({
+        vmId: t.Number()
+    }),
+    body: t.Object({
+        disk: t.String(),
+        size: t.String()
+    }),
+    detail: {
+        summary: "Resize the vm disk",
+        description: "Expand the disk size of the vm. Does not support Shrinking"
+    }
+})
+
+//Delete the VM
+vmRouter.delete("/:vmId/delete", async ({ params: { vmId }, set }) => {
+    try {
+
+        //can't delete a vm if it's running
+        await client.stopVM(nodeName, vmId, true)
+        await sleep(1000)
+        const _ = await client.deleteVM(nodeName, vmId)
+        await sleep(1000)
+        set.status = 200
+        return {
+            "message": "VM deleted successfully",
+            _
+        }
+
+    } catch (error) {
+        set.status = 500
+        return {
+            "message": "failed to delete vm"
+        }
+    }
+}, {
+    params: t.Object({
+        vmId: t.Number(),
+    }),
+    detail: {
+        summary: "Delete a VM",
+        description: "Delete a virtual machine and its volumes"
     }
 })

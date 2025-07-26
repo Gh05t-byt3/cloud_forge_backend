@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import https from 'https';
-import { AuthTicket, ProxmoxConfig, VMStatus, NodeInfo, TaskStatus, VMConfig, VMInfo, ProxmoxResponse } from './types.proxmox';
+import { AuthTicket, ProxmoxConfig, VMStatus, NodeInfo, TaskStatus, VMConfig, VMInfo, ProxmoxResponse, VmResizeConfig } from './types.proxmox';
 
 
 
@@ -121,6 +121,13 @@ export class ProxmoxClient {
     const response: AxiosResponse<ProxmoxResponse<string>> = await this.client.delete(`/nodes/${nodeName}/qemu/${vmid}`, { params });
     return response.data.data;
   }
+
+  //resize vm 
+  async resizeVM(nodeName: string, vmid: number, config: VmResizeConfig): Promise<string> {
+    await this.ensureAuthenticated();
+    const response: AxiosResponse<ProxmoxResponse<string>> = await this.client.put(`/nodes/${nodeName}/qemu/${vmid}/resize`, config)
+    return response.data.data
+  } 
 
   // VM Power Management
   async startVM(nodeName: string, vmid: number): Promise<string> {
