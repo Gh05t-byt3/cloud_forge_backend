@@ -1,5 +1,5 @@
 import { Elysia, t } from "elysia"
-import { client } from "./proxmox";
+import { client } from "../utils/client.proxmox";
 import { sleep } from "@/utils/utils.proxmox";
 import { Type, type Static } from '@sinclair/typebox'
 import { db } from "@/utils/db";
@@ -11,10 +11,13 @@ export const vmRouter = new Elysia({ prefix: "vm", tags: ["Virtual Machines"] })
 
 
 await client.authenticate();
-console.log("authorized")
+console.log("client authorized")
+
+const nodeName = process.env.PROXMOX_NODE!
+
 vmRouter.get("/", async ({ set }) => {
     try {
-        return await client.getVMs("pve")
+        return await client.getVMs(nodeName)
 
     } catch (error) {
         set.status = 500
@@ -33,18 +36,18 @@ vmRouter
     .use(AuthMiddleware)
     .post("/", async ({ body, query, user, set }) => {
         try {
-            const node = "pve" // TODO: hardcoded pve
+            // const node = "pve" // TODO: hardcoded pve
             const newVm = (await db.insert(vm).values({
                 id: body.vmid,
                 name: body.name!,
-                nodeId: node,
+                nodeId: nodeName,
                 projectId: query.projectId,
                 userId: user?.id!,
                 status: "pending"
             }).returning())[0]
 
             try {
-                const _ = await client.createVM(node, {
+                const _ = await client.createVM(nodeName, {
                     ...body
                 })
 
@@ -88,7 +91,7 @@ vmRouter
 
 vmRouter.get("/:id", async ({ params: { id }, set }) => {
     try {
-        return await client.getVM("pve", id)
+        return await client.getVM(nodeName, id)
 
     } catch (error) {
         set.status = 500
@@ -108,9 +111,9 @@ vmRouter.get("/:id", async ({ params: { id }, set }) => {
 
 vmRouter.post("/:id/stop", async ({ params: { id }, set }) => {
     try {
-        await client.stopVM("pve", id, true)
+        await client.stopVM(nodeName, id, true)
         await sleep(2000)
-        return await client.getVM('pve', 100);
+        return await client.getVM(nodeName, 100);
     } catch (error) {
         set.status = 500
         return {
@@ -128,9 +131,9 @@ vmRouter.post("/:id/stop", async ({ params: { id }, set }) => {
 
 vmRouter.post("/:id/start", async ({ params: { id }, set }) => {
     try {
-        await client.startVM("pve", id)
+        await client.startVM(nodeName, id)
         await sleep(2000)
-        return await client.getVM('pve', 100);
+        return await client.getVM(nodeName, 100);
     } catch (error) {
         set.status = 500
         return {
