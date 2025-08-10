@@ -3,6 +3,7 @@ import { swagger } from "@elysiajs/swagger";
 import { vmRouter } from "./routes/vms";
 import { userRouter } from "./routes/user";
 import { projectRouter } from "./routes/project";
+import { cors } from "@elysiajs/cors";
 
 const app = new Elysia()
 app.use(swagger({
@@ -11,6 +12,11 @@ app.use(swagger({
 app.use(vmRouter)
 app.use(userRouter)
 app.use(projectRouter)
+app.use(cors({
+  origin: process.env.CORS_ORIGIN
+}))
+
+
 app.get("/", () => "Hello Elysia")
 app.get("/health", () => {
   return {
