@@ -16,7 +16,7 @@ export const vm = pgTable("vm", {
   id: integer("id").primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
   userId: uuid("user_id").notNull().references(() => user.id),
-  nodeId: varchar("node_id", { length: 255 }).notNull().references(() => node.id),
+  nodeId: varchar("node_id", { length: 255 }).notNull().references(() => node.name),
   projectId: uuid("project_id").notNull().references(() => project.id),
   status: VM_STATUS("status").notNull().default("pending"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -34,6 +34,6 @@ export const vmRelations = relations(vm, ({ one }) => ({
   }),
   node: one(node, {
     fields: [vm.nodeId],
-    references: [node.id],
+    references: [node.name],
   }),
 }));

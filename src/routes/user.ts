@@ -122,15 +122,22 @@ userRouter.use(JWT).post("/login", async ({ jwt, cookie: { auth }, body, set }) 
   body: t.Object({
     email: t.String(),
     password: t.String()
-  })
+  }),
+  detail: {
+    summary: "User Login"
+  }
 })
 
 userRouter.use(AuthMiddleware).get("/profile", async ({ user }) => {
   return user
-}, { userAuth: true })
+}, { userAuth: true, detail: { summary: "Get user profile"} })
 
 
 userRouter.post("/logout", async ({ cookie: { auth } }) => {
   auth.remove()
   return { messge: "Logged Out Happily" }
+}, {
+  detail: {
+    summary: "User Logout"
+  }
 })

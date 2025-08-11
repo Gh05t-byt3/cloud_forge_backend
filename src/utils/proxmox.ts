@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import https from 'https';
-import { AuthTicket, ProxmoxConfig, VMStatus, NodeInfo, TaskStatus, VMConfig, VMInfo, ProxmoxResponse } from './types.proxmox';
+import { AuthTicket, ProxmoxConfig, VMStatus, NodeInfo, TaskStatus, VMConfig, VMInfo, ProxmoxResponse, VmResizeConfig } from './types.proxmox';
 
 
 
@@ -46,7 +46,7 @@ export class ProxmoxClient {
       });
 
       this.authTicket = response.data.data;
-      
+
       // Set default headers for authenticated requests
       this.client.defaults.headers.common['Cookie'] = `PVEAuthCookie=${this.authTicket?.ticket}`;
       this.client.defaults.headers.common['CSRFPreventionToken'] = this.authTicket?.CSRFPreventionToken;
@@ -62,6 +62,7 @@ export class ProxmoxClient {
     if (!this.authTicket) {
       await this.authenticate();
     }
+    await this.authenticate();
   }
 
   // Node Operations
@@ -120,6 +121,13 @@ export class ProxmoxClient {
     const response: AxiosResponse<ProxmoxResponse<string>> = await this.client.delete(`/nodes/${nodeName}/qemu/${vmid}`, { params });
     return response.data.data;
   }
+
+  //resize vm 
+  async resizeVM(nodeName: string, vmid: number, config: VmResizeConfig): Promise<string> {
+    await this.ensureAuthenticated();
+    const response: AxiosResponse<ProxmoxResponse<string>> = await this.client.put(`/nodes/${nodeName}/qemu/${vmid}/resize`, config)
+    return response.data.data
+  } 
 
   // VM Power Management
   async startVM(nodeName: string, vmid: number): Promise<string> {
@@ -196,17 +204,17 @@ export class ProxmoxClient {
 
   async waitForTask(nodeName: string, upid: string, timeout: number = 300000): Promise<TaskStatus> {
     const startTime = Date.now();
-    
+
     while (Date.now() - startTime < timeout) {
       const taskStatus = await this.getTaskStatus(nodeName, upid);
-      
+
       if (taskStatus.status === 'stopped') {
         return taskStatus;
       }
-      
+
       await new Promise(resolve => setTimeout(resolve, 2000));
     }
-    
+
     throw new Error(`Task ${upid} did not complete within ${timeout}ms`);
   }
 
@@ -283,7 +291,7 @@ export class ProxmoxClient {
       compress: 'lzo',
       ...options
     };
-    
+
     const response: AxiosResponse<ProxmoxResponse<string>> = await this.client.post(`/nodes/${nodeName}/vzdump`, backupOptions);
     return response.data.data;
   }
@@ -307,7 +315,7 @@ export class ProxmoxClient {
       try {
         const nodeResources = await this.getNodeResources(nodeName);
         const vmsStatus = await this.getAllVMsStatus(nodeName);
-        
+
         callback({
           timestamp: new Date(),
           node: nodeResources,
@@ -320,10 +328,10 @@ export class ProxmoxClient {
 
     // Initial call
     await monitor();
-    
+
     // Set up interval
     const intervalId = setInterval(monitor, interval);
-    
+
     // Return cleanup function
     return () => clearInterval(intervalId);
   }

@@ -7,6 +7,12 @@ export interface ProxmoxConfig {
   ignoreSslErrors?: boolean;
 }
 
+//for resizing
+export interface VmResizeConfig {
+  disk: string;
+  size: string;
+}
+
 export interface AuthTicket {
   ticket: string;
   CSRFPreventionToken: string;

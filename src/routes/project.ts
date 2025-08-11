@@ -48,7 +48,14 @@ projectRouter.get("/:id", async ({ params, set }) => {
       message: "Internal Server Error"
     }
   }
-}, { params: t.Object({ id: t.String() }) })
+}, {
+  params: t.Object({
+    id: t.String()
+  }),
+  detail: {
+    summary: "Retrieve a project"
+  }
+})
 
 projectRouter
   .use(AuthMiddleware)
@@ -72,7 +79,6 @@ projectRouter
       name: t.String(),
       description: t.String(),
       slug: t.String(),
-      // userId: t.String() //TODO: automatically link user_id to project 
     }),
     detail: {
       summary: "Create a new project"

@@ -10,11 +10,16 @@ app.use(cors({
   origin: ["http://localhost:5173"]
 }))
 app.use(swagger({
-  provider: "swagger-ui"
+  provider: "scalar"
 }))
 app.use(vmRouter)
 app.use(userRouter)
 app.use(projectRouter)
+app.use(cors({
+  origin: process.env.CORS_ORIGIN
+}))
+
+
 app.get("/", () => "Hello Elysia")
 app.get("/health", () => {
   return {
