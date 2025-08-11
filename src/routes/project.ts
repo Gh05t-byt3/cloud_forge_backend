@@ -41,7 +41,7 @@ projectRouter
 projectRouter.get("/:id", async ({ params, set }) => {
   try {
     const data = await db.select().from(project).where(eq(project.id, params.id))
-    return data
+    return data[0]
   } catch (error) {
     set.status = 500
     return {
