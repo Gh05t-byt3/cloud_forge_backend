@@ -79,13 +79,15 @@ userRouter.delete("/:id", async ({ params, set }) => {
 
 
 userRouter.use(JWT).post("/login", async ({ jwt, cookie: { auth }, body, set }) => {
+  console.log("Loging starting")
+  try {
   const selectedUser = await db.query.user.findFirst({
     where: (u, { eq }) => eq(u.email, body.email)
   })
 
   if (!user) {
     auth.remove()
-    set.status = 401
+    set.status = 400
     return {
       message: "Unauthorized"
     }
@@ -95,7 +97,7 @@ userRouter.use(JWT).post("/login", async ({ jwt, cookie: { auth }, body, set }) 
 
   if (!is_match) {
     auth.remove()
-    set.status = 401
+    set.status = 400
     return {
       message: "Unauthorized"
     }
@@ -105,10 +107,16 @@ userRouter.use(JWT).post("/login", async ({ jwt, cookie: { auth }, body, set }) 
   const value = await jwt.sign(JSON.parse(__))
   auth.set({
     value,
-    maxAge: 7 * 3600 * 24,
+    maxAge: 6 * 3600 * 24,
   })
+  console.log("Login Sucessful", value)
   return {
     token: value
+  }
+  } catch (error) {
+    set.status = 500;
+    console.log(error)
+    return { message: "Internal Server Error" }
   }
 }, {
   body: t.Object({
