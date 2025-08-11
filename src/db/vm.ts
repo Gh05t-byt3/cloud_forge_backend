@@ -1,4 +1,4 @@
-import { integer, pgEnum, pgTable, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
+import { inet, integer, pgEnum, pgTable, text, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 import { user } from "./user";
 import { project } from "./project";
 import { node } from "./node";
@@ -16,6 +16,7 @@ export const vm = pgTable("vm", {
   id: integer("id").primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
   userId: uuid("user_id").notNull().references(() => user.id),
+  vmIP: text("vm_ip"),
   nodeId: varchar("node_id", { length: 255 }).notNull().references(() => node.name),
   projectId: uuid("project_id").notNull().references(() => project.id),
   status: VM_STATUS("status").notNull().default("pending"),

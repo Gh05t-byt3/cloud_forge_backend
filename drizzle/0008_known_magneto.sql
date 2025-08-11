@@ -1,0 +1,1 @@
+ALTER TABLE "vm" ADD COLUMN "vm_ip" "inet";

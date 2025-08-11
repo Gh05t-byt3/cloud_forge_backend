@@ -57,6 +57,20 @@
       "when": 1753445811417,
       "tag": "0007_swift_hannibal_king",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1754919424891,
+      "tag": "0008_known_magneto",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1754920235964,
+      "tag": "0009_milky_mojo",
+      "breakpoints": true
     }
   ]
 }

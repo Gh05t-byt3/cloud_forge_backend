@@ -15,9 +15,23 @@ console.log("client authorized")
 
 const nodeName = process.env.PROXMOX_NODE!
 
-vmRouter.get("/", async ({ set }) => {
+vmRouter.get("/", async ({ set, query }) => {
     try {
-        return await client.getVMs(nodeName)
+        const proxmoxVms = await client.getVMs(nodeName)
+        const projectVms = await db.select({ id: vm.id, vmIP: vm.vmIP }).from(vm).where(eq(vm.projectId, query.projectId))
+
+        const projectVmIds = new Set(projectVms.map(v => Number(v.id)))
+
+        const result = proxmoxVms.filter(pv => {
+            return projectVmIds.has(Number(pv.vmid))
+        })
+        return result.map((pv) => {
+            const matchingVm = projectVms.find(vm => Number(vm.id) === Number(pv.vmid))
+            return {
+                ...pv,
+                ip: matchingVm?.vmIP
+            }
+        })
 
     } catch (error) {
         set.status = 500
@@ -29,13 +43,17 @@ vmRouter.get("/", async ({ set }) => {
     detail: {
         summary: "Get all VMs",
         description: "Returns a list of all virtual machines",
-    }
+    },
+    query: t.Object({
+        projectId: t.String()
+    })
 })
 
 vmRouter
     .use(AuthMiddleware)
     .post("/", async ({ body, query, user, set }) => {
         try {
+            console.log(body)
             // const node = "pve" // TODO: hardcoded pve
             const newVm = (await db.insert(vm).values({
                 id: body.vmid,
@@ -43,13 +61,13 @@ vmRouter
                 nodeId: nodeName,
                 projectId: query.projectId,
                 userId: user?.id!,
-                status: "pending"
+                status: "pending",
+                vmIP: query.vmIp  //populate with actual ip
             }).returning())[0]
 
             try {
-                const _ = await client.createVM(nodeName, {
-                    ...body
-                })
+
+                const _ = await client.createVM(nodeName, { ...body, sshkeys: encodeURIComponent(body.sshkeys!) })
 
                 await client.startVM(newVm.nodeId, newVm.id)
                 await sleep(2000)
@@ -73,17 +91,30 @@ vmRouter
                 vmid: t.Number(),
                 name: t.String(),
                 memory: t.Optional(t.Number()),
+                autostart: t.Optional(t.Boolean()),
                 cores: t.Optional(t.Number()),
                 sockets: t.Optional(t.Number()),
                 cpu: t.Optional(t.String()),
                 ostype: t.Optional(t.String()),
                 bootdisk: t.Optional(t.String()),
                 net0: t.Optional(t.String()),
-                ide2: t.Optional(t.String())
+                ide2: t.Optional(t.String()),
+                sshkeys: t.Optional(t.String()),
+                scsi0: t.Optional(t.String()),
+                scsihw: t.Optional(t.String()),
+                localtime: t.Optional(t.Boolean()),
+                ipconfig0: t.Optional(t.String()),
+                ciuser: t.Optional(t.String()),
+                cipassword: t.Optional(t.String()),
+                nameserver: t.Optional(t.String()),
+                boot: t.Optional(t.String()),
+                machine: t.Optional(t.String()),
+                onboot: t.Optional(t.Boolean())
             },
             { additionalProperties: true }
+
         ),
-        query: t.Object({ projectId: t.String() }),
+        query: t.Object({ projectId: t.String(), vmIp: t.Optional(t.String()) }),
         detail: {
             summary: "Create a VM"
         }

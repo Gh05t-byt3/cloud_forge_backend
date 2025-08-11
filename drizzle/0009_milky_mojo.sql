@@ -1,0 +1,1 @@
+ALTER TABLE "vm" ALTER COLUMN "vm_ip" SET DATA TYPE text;
