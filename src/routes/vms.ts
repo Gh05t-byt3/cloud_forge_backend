@@ -201,7 +201,6 @@ vmRouter.put("/:vmId/resize", async ({ params: { vmId }, body, set }) => {
         return {
             "message": "failed to resize vm"
         }
-
     }
 }, {
     params: t.Object({
